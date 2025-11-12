@@ -34,3 +34,4 @@ api_manual_import.py
 ourbit_manual.py
 parcheformatoslbank.py
 adapters/hyperliquidv5.py
+adapters/hyperliquidv4s.py
