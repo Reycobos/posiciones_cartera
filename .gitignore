@@ -33,4 +33,4 @@ changeDB.py
 api_manual_import.py
 ourbit_manual.py
 parcheformatoslbank.py
-hyperliquidv5.py
+adapters/hyperliquidv5.py

@@ -1,0 +1,2908 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Delta Neutral Portfolio</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Estilos existentes (manteniendo todos los demás) */
+      body {
+        background-color: #0d1117;
+        color: #c9d1d9;
+        font-family: "Inter", sans-serif;
+      }
+      h1,
+      h4 {
+        color: #f0f6fc;
+        font-weight: 600;
+      }
+      .nav-tabs .nav-link {
+        color: #8b949e;
+      }
+      .nav-tabs .nav-link.active {
+        background-color: #161b22;
+        color: #f0f6fc;
+      }
+      .card {
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
+      .table {
+        color: #c9d1d9;
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: #171c28;
+        --bs-table-striped-color: #c9d1d9;
+        --bs-table-hover-bg: #22283a;
+        --bs-table-hover-color: #c9d1d9;
+        border-color: #30363d;
+        font-size: 0.85rem;
+      }
+      .table > :not(caption) > * > * {
+        background-color: #1e1e2d !important;
+        color: #e8e8e8 !important;
+        border-color: #30363d !important;
+        white-space: nowrap;
+        vertical-align: middle;
+        padding: 0.4rem 0.5rem;
+      }
+      .table .pnl-positive {
+        color: #2ecc71 !important;
+        font-weight: 600;
+      }
+      .table .pnl-negative {
+        color: #e74c3c !important;
+        font-weight: 600;
+      }
+      .table thead th,
+      .table thead td {
+        background-color: #2a2a3d;
+        color: #fff;
+        font-size: 0.8rem;
+        padding: 0.5rem;
+      }
+      .table tbody tr {
+        background-color: #1e1e2d;
+        color: #e8e8e8 !important;
+      }
+      .table-hover > tbody > tr:hover > * {
+        background-color: #22283a !important;
+      }
+      .table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: #171c28 !important;
+      }
+      .refresh-btn {
+        background: #222;
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+      }
+      .refresh-btn:hover {
+        background: #444;
+      }
+      .pnl-positive {
+        color: #2ecc71;
+        font-weight: 600;
+      }
+      .pnl-negative {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+
+      /* ESTILOS NUEVOS PARA BALANCES COMPACTOS */
+      .balances-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        border-radius: 12px;
+        color: white;
+      }
+      .balances-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
+      .balances-summary {
+        display: flex;
+        gap: 20px;
+      }
+      .balance-summary-item {
+        text-align: right;
+      }
+      .balance-summary-label {
+        font-size: 0.85rem;
+        opacity: 0.9;
+      }
+      .balance-summary-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+
+      .balances-table {
+        margin-top: 10px;
+      }
+      .balances-table .table {
+        margin-bottom: 0;
+      }
+      .balances-table th,
+      .balances-table td {
+        text-align: right;
+      }
+      .balances-table th:first-child,
+      .balances-table td:first-child {
+        text-align: left;
+      }
+
+      /* Estilos para otros componentes (manteniendo los existentes) */
+      .card-exchange {
+        background: #2b2f3a;
+        color: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .card-exchange h5 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #f0f6fc;
+      }
+      .value-positive {
+        color: #2ecc71;
+        font-weight: bold;
+      }
+      .value-negative {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+      .strategy-card {
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .strategy-header {
+        background: linear-gradient(90deg, #1e3a8a, #2563eb);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .badge-long {
+        background-color: #16a34a;
+      }
+      .badge-short {
+        background-color: #dc2626;
+      }
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+        text-align: center;
+      }
+      .summary-item {
+        background-color: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .summary-item h6 {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #8b949e;
+      }
+      .summary-item p {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+      .risk-pill {
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .risk-red {
+        background: #b91c1c;
+        color: #fff;
+      }
+      .risk-orange {
+        background: #ea580c;
+        color: #fff;
+      }
+      .risk-yellow {
+        background: #ca8a04;
+        color: #111;
+      }
+      .risk-green {
+        background: #16a34a;
+        color: #fff;
+      }
+      .closed-position-card {
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .closed-position-header {
+        background: linear-gradient(90deg, #5b2085, #37065e);
+        color: white;
+        padding: 8px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .closed-position-header h6 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .closed-position-body {
+        padding: 10px;
+      }
+      .closed-position-table {
+        width: 100%;
+        font-size: 0.8rem;
+      }
+      .closed-position-table th {
+        background-color: #2a2a3d;
+        color: #fff;
+        padding: 6px 8px;
+        text-align: center;
+        font-weight: 600;
+      }
+      .closed-position-table td {
+        padding: 6px 8px;
+        text-align: center;
+        border-bottom: 1px solid #30363d;
+        color: #e8e8e8 !important;
+      }
+      .closed-position-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #30363d;
+      }
+      .footer-left {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-right {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-item {
+        text-align: center;
+      }
+      .footer-label {
+        font-size: 0.7rem;
+        color: #8b949e;
+        margin-bottom: 2px;
+      }
+      .footer-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e8e8e8;
+      }
+      .compact-badge {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+      }
+      .header-summary {
+        display: flex;
+        gap: 15px;
+        margin-top: 5px;
+      }
+      .header-summary-item {
+        text-align: center;
+      }
+      .header-summary-label {
+        font-size: 0.65rem;
+        color: #c9d1d9;
+      }
+      .header-summary-value {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 10px;
+      }
+      .page-btn {
+        background: #2a2a3d;
+        color: #e8e8e8;
+        border: 1px solid #30363d;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .page-btn:hover {
+        background: #3a3a4d;
+      }
+      .page-btn.active {
+        background: #2563eb;
+        color: white;
+      }
+      .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .days-selector {
+        background: #2a2a3d;
+        color: #e8e8e8;
+        border: 1px solid #30363d;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-left: 15px;
+      }
+      .funding-estimate {
+        font-style: italic;
+        opacity: 0.7;
+      }
+      .closed-kpis .header-summary-item,
+      .closed-kpis .kpi {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+      .closed-kpis .header-summary-label {
+        font-size: 0.85rem;
+        opacity: 0.75;
+      }
+      .closed-kpis .header-summary-value {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .pos-head {
+        padding: 10px 12px;
+      }
+      .pos-head .symbol-title {
+        font-size: 0.95rem;
+      }
+      .pill-delta {
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .pos-dates {
+        font-size: 0.82rem;
+        opacity: 0.85;
+      }
+      .pos-head .metrics {
+        gap: 12px;
+        font-size: 0.9rem;
+      }
+      .pos-head .metrics .label {
+        opacity: 0.8;
+        font-size: 0.85rem;
+      }
+      .pos-card .pos-head + .position-table {
+        margin-top: 8px;
+      }
+      #closedPositions table tbody tr:last-child td {
+        border-bottom: none !important;
+      }
+      .top-title,
+      .app-title,
+      header .app-title {
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+      }
+      .nav-tabs,
+      .tabs-wrap {
+        margin-top: 0 !important;
+      }
+      header,
+      .app-header {
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+      }
+      .pos-head .title-row {
+        width: 100%;
+      }
+      .pos-head .pos-dates {
+        margin-left: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .pos-head .symbol-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: clamp(80px, 24vw, 220px);
+      }
+      .pill-delta {
+        flex-shrink: 0;
+      }
+      .closed-position-header .pos-dates {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .closed-position-header h6 {
+        margin: 0;
+      }
+
+      /* ESTILOS PARA ORDENAMIENTO DE TABLA */
+      .table-sortable th {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px !important;
+      }
+
+      .table-sortable th.sortable::after {
+        content: "↕";
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.5;
+        font-size: 0.8rem;
+      }
+
+      .table-sortable th.sort-asc::after {
+        content: "↑";
+        opacity: 1;
+        font-weight: bold;
+      }
+
+      .table-sortable th.sort-desc::after {
+        content: "↓";
+        opacity: 1;
+        font-weight: bold;
+      }
+
+      /* ESTILOS PARA FILTROS Y PAGINACIÓN DE CLOSED POSITIONS */
+      .dark-input {
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+      }
+
+      .dark-input:focus {
+        background-color: #161b22;
+        border-color: #58a6ff;
+        color: #c9d1d9;
+        box-shadow: 0 0 0 0.2rem rgba(21, 87, 36, 0.25);
+      }
+
+      .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .closed-pagination-info {
+        color: #8b949e;
+        font-size: 0.9rem;
+      }
+      /* Etiquetas blancas en la pestaña Opciones */
+      #options .form-label {
+        color: #fff;
+      }
+
+      /* Opcional: mejorar contraste de inputs/selects en tema oscuro */
+      #options .form-control.dark-input,
+      #options .form-select.dark-input {
+        color: #fff;
+      }
+      #options .form-control.dark-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* Estilos para el modal oscuro */
+      .modal-content {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d;
+      }
+
+      .modal-header {
+        border-bottom: 1px solid #30363d;
+      }
+
+      .modal-footer {
+        border-top: 1px solid #30363d;
+      }
+
+      /* Estilos para botones de edición */
+      .edit-size-btn {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+      }
+
+      /* Estilos para botones de edición en balances */
+      .btn-outline-warning {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-width: 1px;
+      }
+
+      /* Mejora visual para spreads */
+      .spread-positive {
+        color: #2ecc71;
+        font-weight: bold;
+      }
+
+      .spread-negative {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container mt-4">
+      <h1 class="mb-4">Delta Neutral Portfolio</h1>
+
+      <!-- NAVIGATION TABS -->
+      <ul class="nav nav-tabs" id="portfolioTabs" role="tablist">
+        <li class="nav-item">
+          <button
+            class="nav-link active"
+            id="balances-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#balances"
+            type="button"
+            role="tab"
+          >
+            Balances
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="positions-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#positions"
+            type="button"
+            role="tab"
+          >
+            Open Positions
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="closed-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#closed"
+            type="button"
+            role="tab"
+          >
+            Closed Positions
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="funding-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#funding"
+            type="button"
+            role="tab"
+          >
+            Funding Fees
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="options-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#options"
+            type="button"
+            role="tab"
+          >
+            Opciones
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content mt-3" id="portfolioTabsContent">
+        <!-- BALANCES -->
+        <div class="tab-pane fade show active" id="balances" role="tabpanel">
+          <div id="balances-container"></div>
+        </div>
+
+        <!-- OPEN POSITIONS -->
+        <div class="tab-pane fade" id="positions" role="tabpanel">
+          <div id="positions-container"></div>
+        </div>
+
+        <!-- CLOSED POSITIONS -->
+        <div class="tab-pane fade" id="closed" role="tabpanel">
+          <div
+            class="closed-header d-flex align-items-center justify-content-between mb-2"
+          >
+            <div
+              class="closed-header-left d-flex align-items-center gap-3 flex-wrap"
+            >
+              <h4 class="mb-0">Closed Positions</h4>
+              <!-- KPIs inline -->
+              <div
+                id="closedTotals"
+                class="closed-kpis d-flex align-items-center gap-3"
+              ></div>
+            </div>
+            <button id="refreshClosed" class="refresh-btn">🔄 Refresh</button>
+          </div>
+
+          <!-- Filtros -->
+          <div class="card p-3 mb-3">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label for="filterExchange" class="form-label text-light"
+                  >Exchange</label
+                >
+                <input
+                  type="text"
+                  class="form-control dark-input"
+                  id="filterExchange"
+                  placeholder="Filter by exchange"
+                />
+              </div>
+              <div class="col-md-3">
+                <label for="filterSymbol" class="form-label text-light"
+                  >Symbol</label
+                >
+                <input
+                  type="text"
+                  class="form-control dark-input"
+                  id="filterSymbol"
+                  placeholder="Filter by symbol"
+                />
+              </div>
+              <div class="col-md-2">
+                <label for="filterSide" class="form-label text-light"
+                  >Side</label
+                >
+                <select class="form-select dark-input" id="filterSide">
+                  <option value="">All</option>
+                  <option value="LONG">Long</option>
+                  <option value="SHORT">Short</option>
+                  <option value="SPOTBUY">Spot Buy</option>
+                  <option value="SWAPSTABLE">Swap Stable</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="filterDate" class="form-label text-light"
+                  >From Date</label
+                >
+                <input
+                  type="date"
+                  class="form-control dark-input"
+                  id="filterDate"
+                  value="2025-09-01"
+                  min="2025-09-01"
+                />
+              </div>
+              <div class="col-md-1 d-flex align-items-end">
+                <button id="applyFilters" class="btn btn-primary w-100">
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles de paginación superior -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+              <span class="text-light me-2">Show:</span>
+              <select
+                id="pageSizeSelect"
+                class="form-select dark-input"
+                style="width: auto"
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+              </select>
+              <span class="text-light ms-2">entries</span>
+            </div>
+            <div id="closedPaginationTop" class="pagination-container"></div>
+          </div>
+
+          <!-- Contenedor de posiciones cerradas -->
+          <div id="closedPositions"></div>
+
+          <!-- Controles de paginación inferior -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div id="closedPaginationBottom" class="pagination-container"></div>
+          </div>
+        </div>
+
+        <!-- FUNDING -->
+        <div class="tab-pane fade" id="funding" role="tabpanel">
+          <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="mb-0">Funding Fees</h4>
+              <div>
+                <select id="daysSelector" class="days-selector">
+                  <option value="7">Last 7 days</option>
+                  <option value="14">Last 14 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="0">All days</option>
+                </select>
+                <button id="refreshFunding" class="refresh-btn">
+                  🔄 Refresh
+                </button>
+                <label style="margin-left: 8px; font-size: 0.9rem">
+                  <input type="checkbox" id="toggleEstimates" checked />
+                  Show estimates
+                </label>
+              </div>
+            </div>
+            <div id="fundingPagination" class="pagination-container"></div>
+            <div id="funding-container"></div>
+            <div
+              id="fundingPaginationBottom"
+              class="pagination-container"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="options" role="tabpanel">
+        <div class="card p-3">
+          <h4 class="mb-3">Importar archivos (Ourbit)</h4>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Exchange</label>
+              <select id="opt-exchange" class="form-select dark-input">
+                <option value="ourbit" selected>Ourbit</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Tipo de posición</label>
+              <select id="opt-product" class="form-select dark-input">
+                <option value="Futures position" selected>
+                  Futures position
+                </option>
+                <!-- futuro: Spot position -->
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Fund flow (Funding fees)</label>
+              <input
+                type="file"
+                id="opt-fund"
+                class="form-control dark-input"
+                accept=".xlsx,.xls,.csv"
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Fills history (opcional)</label>
+              <input
+                type="file"
+                id="opt-fills"
+                class="form-control dark-input"
+                accept=".xlsx,.xls,.csv"
+              />
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button id="btn-import-ourbit" class="btn btn-primary">
+                Importar
+              </button>
+              <span id="import-status" class="ms-2 text-white-50"></span>
+            </div>
+          </div>
+        </div>
+        <div class="card p-3 mt-3">
+          <h4 class="mb-3">Agregar posición cerrada (manual)</h4>
+          <div class="row g-3" id="manual-closed-form">
+            <div class="col-md-2">
+              <label class="form-label">Exchange</label>
+              <input
+                type="text"
+                id="m-exchange"
+                class="form-control dark-input"
+                placeholder="bybit / gate / ..."
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Symbol</label>
+              <input
+                type="text"
+                id="m-symbol"
+                class="form-control dark-input"
+                placeholder="BTCUSDT / ALPACAUSDT / ..."
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Side</label>
+              <select id="m-side" class="form-select dark-input">
+                <option value="LONG">LONG</option>
+                <option value="SHORT">SHORT</option>
+                <option value="SPOTBUY">SPOTBUY</option>
+                <option value="SPOTSELL">SPOTSELL</option>
+                <option value="SWAPSTABLE">SWAPSTABLE</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Size</label>
+              <input
+                type="number"
+                step="0.00000001"
+                id="m-size"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Entry price</label>
+              <input
+                type="number"
+                step="0.00000001"
+                id="m-entry"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Close price</label>
+              <input
+                type="number"
+                step="0.00000001"
+                id="m-close"
+                class="form-control dark-input"
+              />
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Open time</label>
+              <input
+                type="datetime-local"
+                id="m-open"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Close time</label>
+              <input
+                type="datetime-local"
+                id="m-close-time"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Funding total</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-funding"
+                class="form-control dark-input"
+                placeholder="p.ej. -2.35"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Fee total</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-fees"
+                class="form-control dark-input"
+                placeholder="p.ej. -1.20"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Realized PnL (opcional)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-realized"
+                class="form-control dark-input"
+                placeholder="si vacío: se compone"
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Initial margin (opcional)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-initial-margin"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Notional (opcional)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-notional"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Leverage (opcional)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="m-leverage"
+                class="form-control dark-input"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Liq. price (opcional)</label>
+              <input
+                type="number"
+                step="0.00000001"
+                id="m-liq"
+                class="form-control dark-input"
+              />
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+              <button id="btn-save-manual-closed" class="btn btn-success">
+                Guardar
+              </button>
+              <span id="manual-closed-status" class="ms-2 text-white-50"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para editar tamaño -->
+    <div class="modal fade" id="editSizeModal" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Position Size</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Exchange</label>
+              <input
+                type="text"
+                id="edit-exchange"
+                class="form-control bg-secondary text-light"
+                readonly
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Symbol</label>
+              <input
+                type="text"
+                id="edit-symbol"
+                class="form-control bg-secondary text-light"
+                readonly
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">New Size</label>
+              <input
+                type="number"
+                id="edit-size"
+                class="form-control bg-dark text-light"
+                step="0.001"
+                min="0"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="save-size-btn">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      let allFundingData = [];
+      function toMs(ts) {
+        if (ts === null || ts === undefined) return NaN;
+        const n = Number(ts);
+        if (Number.isFinite(n)) return n < 1e12 ? n * 1000 : n; // 10 dígitos => s
+        const d = Date.parse(ts);
+        return Number.isFinite(d) ? d : NaN;
+      }
+
+      function cleanSymbol(sym) {
+        if (!sym) return "";
+        // Normalizar a mayúsculas
+        sym = sym.toUpperCase();
+
+        // Quitar prefijo PERP_ si lo hay
+        sym = sym.replace(/^PERP_/, "");
+
+        // Quitar sufijos conocidos (USDT, USDC, PERP)
+        sym = sym.replace(/(USDT|USDC|PERP)$/i, "");
+
+        // Quitar _USDT, _USDC, -USDT, -USDC, _PERP
+        sym = sym.replace(/(_|-)(USDT|USDC|PERP)$/i, "");
+
+        // Quitar guiones bajos o medios al final
+        sym = sym.replace(/[_-]+$/i, "");
+
+        // Si todavía quedan separadores, coge la primera parte "limpia"
+        // Ejemplo: "KAITO_USDC" → "KAITO", "BTC-USDC" → "BTC"
+        const parts = sym.split(/[_-]/);
+        if (parts.length > 1) {
+          sym = parts[0];
+        }
+
+        return sym;
+      }
+
+      // ========== OURBIT MANUAL BALANCE ==========
+      function getManualOurbitBalance() {
+        const stored = localStorage.getItem("ourbit_manual_balance");
+        if (stored) {
+          return JSON.parse(stored);
+        }
+
+        // Valores por defecto
+        return {
+          exchange: "ourbit",
+          equity: 0,
+          balance: 0,
+          unrealized_pnl: 0,
+          spot: 0,
+          margin: 0,
+          futures: 0,
+        };
+      }
+
+      function saveManualOurbitBalance(data) {
+        localStorage.setItem("ourbit_manual_balance", JSON.stringify(data));
+      }
+
+      function openOurbitEditModal() {
+        const current = getManualOurbitBalance();
+
+        // Crear modal dinámicamente
+        const modalHtml = `
+              <div class="modal fade" id="ourbitEditModal" tabindex="-1">
+                  <div class="modal-dialog">
+                      <div class="modal-content bg-dark text-light">
+                          <div class="modal-header">
+                              <h5 class="modal-title">Edit Ourbit Balances (Manual)</h5>
+                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                              <div class="row g-3">
+                                  <div class="col-md-6">
+                                      <label class="form-label">Spot Balance</label>
+                                      <input type="number" id="ourbit-spot" class="form-control bg-secondary text-light" value="${current.spot}" step="0.01" min="0">
+                                  </div>
+                                  <div class="col-md-6">
+                                      <label class="form-label">Margin Balance</label>
+                                      <input type="number" id="ourbit-margin" class="form-control bg-secondary text-light" value="${current.margin}" step="0.01" min="0">
+                                  </div>
+                                  <div class="col-md-6">
+                                      <label class="form-label">Futures Balance</label>
+                                      <input type="number" id="ourbit-futures" class="form-control bg-secondary text-light" value="${current.futures}" step="0.01" min="0">
+                                  </div>
+                                  <div class="col-md-6">
+                                      <label class="form-label">Unrealized PnL</label>
+                                      <input type="number" id="ourbit-unrealized" class="form-control bg-secondary text-light" value="${current.unrealized_pnl}" step="0.01">
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-primary" onclick="saveOurbitBalances()">Save Changes</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          `;
+
+        // Remover modal existente si hay
+        const existingModal = document.getElementById("ourbitEditModal");
+        if (existingModal) {
+          existingModal.remove();
+        }
+
+        // Agregar modal al DOM
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+        // Mostrar modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("ourbitEditModal")
+        );
+        modal.show();
+      }
+
+      function saveOurbitBalances() {
+        const spot =
+          parseFloat(document.getElementById("ourbit-spot").value) || 0;
+        const margin =
+          parseFloat(document.getElementById("ourbit-margin").value) || 0;
+        const futures =
+          parseFloat(document.getElementById("ourbit-futures").value) || 0;
+        const unrealized =
+          parseFloat(document.getElementById("ourbit-unrealized").value) || 0;
+
+        const equity = spot + margin + futures + unrealized;
+        const balance = spot + margin + futures;
+
+        const ourbitData = {
+          exchange: "ourbit",
+          equity: equity,
+          balance: balance,
+          unrealized_pnl: unrealized,
+          spot: spot,
+          margin: margin,
+          futures: futures,
+        };
+
+        saveManualOurbitBalance(ourbitData);
+
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("ourbitEditModal")
+        );
+        modal.hide();
+
+        // Recargar balances para mostrar cambios
+        setTimeout(() => {
+          fetch("/api/balances")
+            .then((r) => r.json())
+            .then((data) => {
+              const exchanges = Array.isArray(data.exchanges)
+                ? data.exchanges
+                : [];
+              let totals = data.totals || null;
+
+              // AGREGAR OURBIT ANTES del cálculo de totals
+              try {
+                const ourbitData = getManualOurbitBalance();
+                if (ourbitData) {
+                  exchanges.push(ourbitData);
+                }
+              } catch (e) {
+                console.log("❌ Ourbit balances error: " + e);
+              }
+
+              if (!totals) {
+                totals = {
+                  equity: exchanges.reduce(
+                    (a, b) => a + Number(b.equity || 0),
+                    0
+                  ),
+                  balance: exchanges.reduce(
+                    (a, b) => a + Number(b.balance || 0),
+                    0
+                  ),
+                  unrealized_pnl: exchanges.reduce(
+                    (a, b) => a + Number(b.unrealized_pnl || 0),
+                    0
+                  ),
+                };
+              }
+
+              balancesData = exchanges;
+              const sortedExchanges = sortBalancesData("equity", "desc");
+              renderBalancesTable({
+                exchanges: sortedExchanges,
+                totals: totals,
+              });
+            });
+        }, 500);
+      }
+
+      // === FUNCIÓN PARA CALCULAR SPREAD ===
+      function calculateSpread(positions) {
+        if (!positions || positions.length < 2) return null;
+
+        let longEntry = null;
+        let shortEntry = null;
+
+        positions.forEach((p) => {
+          const side = (p.side || "").toLowerCase();
+          const entry = Number(p.entry_price || 0);
+
+          if (side === "long" && entry > 0) {
+            longEntry = entry;
+          } else if (side === "short" && entry > 0) {
+            shortEntry = entry;
+          }
+        });
+
+        if (longEntry && shortEntry && shortEntry > 0) {
+          // Spread = (Short - Long) / Short * 100
+          const spreadPercent = ((shortEntry - longEntry) / shortEntry) * 100;
+          return {
+            value: spreadPercent,
+            beneficial: spreadPercent > 0, // positivo cuando short > long
+          };
+        }
+
+        return null;
+      }
+
+      // === FUNCIONES PARA MODIFICAR TAMAÑO ===
+      let positionSizeCache = JSON.parse(
+        localStorage.getItem("positionSizeCache") || "{}"
+      );
+
+      function saveSizeToCache(exchange, symbol, newSize) {
+        const key = `${exchange.toLowerCase()}_${symbol.toUpperCase()}`;
+        positionSizeCache[key] = {
+          size: parseFloat(newSize),
+          timestamp: Date.now(),
+          symbol: symbol,
+          exchange: exchange,
+        };
+        localStorage.setItem(
+          "positionSizeCache",
+          JSON.stringify(positionSizeCache)
+        );
+      }
+
+      function getCachedSize(exchange, symbol, originalSize) {
+        const key = `${exchange.toLowerCase()}_${symbol.toUpperCase()}`;
+        const cached = positionSizeCache[key];
+
+        // Limpiar cache si la posición ya no existe (podría expandirse con más lógica)
+        if (cached && Date.now() - cached.timestamp > 7 * 24 * 60 * 60 * 1000) {
+          delete positionSizeCache[key];
+          localStorage.setItem(
+            "positionSizeCache",
+            JSON.stringify(positionSizeCache)
+          );
+          return originalSize;
+        }
+
+        return cached ? cached.size : originalSize;
+      }
+
+      function cleanupPositionCache(currentPositions) {
+        const activeKeys = new Set();
+
+        currentPositions.forEach((p) => {
+          const key = `${p.exchange.toLowerCase()}_${p.symbol.toUpperCase()}`;
+          activeKeys.add(key);
+        });
+
+        // Eliminar entradas de cache para posiciones que ya no existen
+        Object.keys(positionSizeCache).forEach((key) => {
+          if (!activeKeys.has(key)) {
+            delete positionSizeCache[key];
+          }
+        });
+
+        localStorage.setItem(
+          "positionSizeCache",
+          JSON.stringify(positionSizeCache)
+        );
+      }
+
+      function renderSpread(symbol, positions) {
+        const spread = calculateSpread(positions);
+        if (spread) {
+          const spreadElement = document.getElementById(
+            `spread-${cleanSymbol(symbol)}`
+          );
+          if (spreadElement) {
+            const spreadClass = spread.beneficial
+              ? "text-success"
+              : "text-danger";
+            const spreadIcon = spread.beneficial ? "↗️" : "↘️";
+            spreadElement.innerHTML = `<span class="${spreadClass} fw-bold">${spreadIcon} ${spread.value.toFixed(
+              2
+            )}%</span>`;
+          }
+        }
+      }
+
+      function updatePositionSizeInUI(exchange, symbol, newSize) {
+        // Encontrar y actualizar todas las instancias de esta posición en la UI
+        const buttons = document.querySelectorAll(
+          `.edit-size-btn[data-exchange="${exchange}"][data-symbol="${symbol}"]`
+        );
+
+        buttons.forEach((btn) => {
+          btn.setAttribute("data-current-size", newSize);
+          // Encontrar la celda de tamaño en la misma fila y actualizarla
+          const row = btn.closest("tr");
+          const sizeCell = row.querySelector("td:nth-child(4)"); // Asumiendo que size es la 4ta columna
+          if (sizeCell) {
+            sizeCell.textContent = parseFloat(newSize).toFixed(2);
+          }
+        });
+
+        // Recalcular y actualizar totales si es necesario
+        setTimeout(() => {
+          // Podrías agregar aquí una recalculación de los totales si es necesario
+          console.log(`Size updated: ${exchange} ${symbol} -> ${newSize}`);
+        }, 100);
+      }
+
+      // === BALANCES CON ORDENAMIENTO ===
+      let balancesData = [];
+      let currentSort = { column: "equity", direction: "desc" };
+
+      function sortBalancesData(column, direction) {
+        const sortedData = [...balancesData];
+
+        sortedData.sort((a, b) => {
+          let aVal, bVal;
+
+          if (column === "exchange") {
+            aVal = a.exchange.toUpperCase();
+            bVal = b.exchange.toUpperCase();
+          } else if (column === "equity") {
+            aVal = parseFloat(a.equity || 0);
+            bVal = parseFloat(b.equity || 0);
+          } else if (column === "spot") {
+            aVal = parseFloat(a.spot || 0);
+            bVal = parseFloat(b.spot || 0);
+          } else if (column === "margin") {
+            aVal = parseFloat(a.margin || 0);
+            bVal = parseFloat(b.margin || 0);
+          } else if (column === "futures") {
+            aVal = parseFloat(a.futures || 0);
+            bVal = parseFloat(b.futures || 0);
+          } else if (column === "unrealized_pnl") {
+            aVal = parseFloat(a.unrealized_pnl || 0);
+            bVal = parseFloat(b.unrealized_pnl || 0);
+          }
+
+          if (direction === "asc") {
+            return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+          } else {
+            return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+          }
+        });
+
+        return sortedData;
+      }
+
+      function renderBalancesTable(data) {
+        const container = document.getElementById("balances-container");
+        const totals = data.totals || {
+          equity: 0,
+          balance: 0,
+          unrealized_pnl: 0,
+        };
+
+        // Actualizar encabezados con clases de ordenamiento
+        const exchangeClass =
+          currentSort.column === "exchange"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+        const equityClass =
+          currentSort.column === "equity"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+        const spotClass =
+          currentSort.column === "spot"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+        const marginClass =
+          currentSort.column === "margin"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+        const futuresClass =
+          currentSort.column === "futures"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+        const pnlClass =
+          currentSort.column === "unrealized_pnl"
+            ? `sort-${currentSort.direction}`
+            : "sortable";
+
+        container.innerHTML = `
+            <div class="balances-header">
+            <h2>$${totals.equity.toFixed(2)}</h2>
+            <div class="balances-summary">
+                <div class="balance-summary-item">
+                <div class="balance-summary-label">Total Balance</div>
+                <div class="balance-summary-value">$${totals.balance.toFixed(
+                  2
+                )}</div>
+                </div>
+                <div class="balance-summary-item">
+                <div class="balance-summary-label">Unrealized PnL</div>
+                <div class="balance-summary-value ${
+                  totals.unrealized_pnl >= 0
+                    ? "value-positive"
+                    : "value-negative"
+                }">
+                    $${totals.unrealized_pnl.toFixed(2)}
+                </div>
+                </div>
+            </div>
+            </div>
+            
+            <div class="balances-table card p-3">
+            <table class="table table-sm table-bordered table-hover table-striped table-sortable">
+                <thead>
+                <tr>
+                    <th class="${exchangeClass}" data-column="exchange">Exchange</th>
+                    <th class="${spotClass}" data-column="spot">Spot</th>
+                    <th class="${marginClass}" data-column="margin">Margin</th>
+                    <th class="${futuresClass}" data-column="futures">Futures</th>
+                    <th class="${pnlClass}" data-column="unrealized_pnl">Unrealized PnL</th>
+                    <th class="${equityClass}" data-column="equity">Total Equity</th>
+                </tr>
+                </thead>
+                <tbody>
+                ${data.exchanges
+                  .map(
+                    (b) => `
+                    <tr>
+                    <td>
+                      ${b.exchange.toUpperCase()}
+                      ${
+                        b.exchange.toLowerCase() === "ourbit"
+                          ? '<button class="btn btn-sm btn-outline-warning ms-2" onclick="openOurbitEditModal()">✏️ Edit</button>'
+                          : ""
+                      }
+                    </td>
+                    <td>$${parseFloat(b.spot || 0).toFixed(2)}</td>
+                    <td>$${parseFloat(b.margin || 0).toFixed(2)}</td>
+                    <td>$${parseFloat(b.futures || 0).toFixed(2)}</td>
+                    <td class="${
+                      b.unrealized_pnl >= 0 ? "pnl-positive" : "pnl-negative"
+                    }">
+                        $${parseFloat(b.unrealized_pnl || 0).toFixed(2)}
+                    </td>
+                    <td>$${parseFloat(b.equity || 0).toFixed(2)}</td>
+                    </tr>
+                `
+                  )
+                  .join("")}
+                </tbody>
+            </table>
+            </div>
+        `;
+
+        // Agregar event listeners para ordenamiento
+        document
+          .querySelectorAll(".table-sortable th[data-column]")
+          .forEach((header) => {
+            header.addEventListener("click", () => {
+              const column = header.getAttribute("data-column");
+
+              // Si ya estamos ordenando por esta columna, cambiar dirección
+              if (currentSort.column === column) {
+                currentSort.direction =
+                  currentSort.direction === "asc" ? "desc" : "asc";
+              } else {
+                // Si es una columna diferente, ordenar asc por defecto excepto para equity
+                currentSort.column = column;
+                currentSort.direction = column === "equity" ? "desc" : "asc";
+              }
+
+              // Ordenar y volver a renderizar
+              const sortedData = {
+                exchanges: sortBalancesData(
+                  currentSort.column,
+                  currentSort.direction
+                ),
+                totals: totals,
+              };
+
+              renderBalancesTable(sortedData);
+            });
+          });
+      }
+
+      // Actualizar la llamada a la API de balances
+      fetch("/api/balances")
+        .then((r) => r.json())
+        .then((data) => {
+          const exchanges = Array.isArray(data.exchanges) ? data.exchanges : [];
+          let totals = data.totals || null;
+
+          // Ourbit (Manual) - AGREGAR ESTE BLOCO
+          try {
+            const ourbitData = getManualOurbitBalance();
+            if (ourbitData) {
+              exchanges.push(ourbitData);
+            }
+            console.log("✅ Ourbit balances OK (Manual)");
+          } catch (e) {
+            console.log("❌ Ourbit balances error: " + e);
+          }
+
+          // SIEMPRE recalcular totales después de agregar OurBit para incluirlo en el total
+          totals = {
+            equity: exchanges.reduce((a, b) => a + Number(b.equity || 0), 0),
+            balance: exchanges.reduce((a, b) => a + Number(b.balance || 0), 0),
+            unrealized_pnl: exchanges.reduce(
+              (a, b) => a + Number(b.unrealized_pnl || 0),
+              0
+            ),
+          };
+
+          // Guardar datos originales
+          balancesData = exchanges;
+
+          // Ordenar por defecto por equity descendente
+          const sortedExchanges = sortBalancesData("equity", "desc");
+
+          // Renderizar tabla
+          renderBalancesTable({
+            exchanges: sortedExchanges,
+            totals: totals,
+          });
+        });
+
+      // --- HELPERS FUNDING PARA OPEN POSITIONS ---
+      function ymd(d) {
+        // YYYY-MM-DD en local
+        const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        return z.toISOString().slice(0, 10);
+      }
+
+      // Suma funding (income) de allFundingData para un símbolo base en un día concreto (YYYY-MM-DD)
+      function sumFundingForDay(baseSym, ymdStr) {
+        if (
+          !Array.isArray(window.allFundingData) ||
+          !window.allFundingData.length
+        )
+          return 0;
+        let s = 0;
+        for (const f of window.allFundingData) {
+          // ⬇️ ignora proyecciones/estimaciones
+          if (
+            f?.estimated ||
+            String(f?.type).toUpperCase() === "FUNDING_ESTIMATE"
+          )
+            continue;
+
+          const d = f?.timestamp ? new Date(f.timestamp) : null;
+          if (!d) continue;
+          if (ymd(d) !== ymdStr) continue;
+          if (cleanSymbol(f.symbol) !== baseSym) continue;
+          s += Number(f.income || 0);
+        }
+        return s;
+      }
+
+      // Devuelve {d2, d1, d0} para la cabecera
+      function fundingLast3Days(baseSym) {
+        const now = new Date();
+        const d0 = ymd(now);
+        const d1 = ymd(
+          new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+        );
+        const d2 = ymd(
+          new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2)
+        );
+        return {
+          d2: sumFundingForDay(baseSym, d2),
+          d1: sumFundingForDay(baseSym, d1),
+          d0: sumFundingForDay(baseSym, d0),
+        };
+      }
+
+      // Formatea + colorea importes
+      function fmtFundingVal(x) {
+        const n = Number(x || 0);
+        const cls = n >= 0 ? "pnl-positive" : "pnl-negative";
+        return `<span class="${cls}">${n.toFixed(2)}</span>`;
+      }
+
+      // Calcula APR neto (LIVE) a partir de las patas del grupo, si vienen rate e intervalo
+      // Convención: rate viene como fracción por intervalo (ej. 0.01% => 0.0001), intervalo en horas (1/4/8).
+      // Long paga (+rate => -), Short cobra (+rate => +). Net = sum(sign*rate)* (24/interval) * 365 * 100
+      function calcNetFundingAPR(positions) {
+        if (!Array.isArray(positions) || !positions.length) return null;
+        let acc = 0;
+        for (const p of positions) {
+          const rate = Number(p?.funding_rate);
+          const ih = Number(
+            p?.funding_interval_hours || p?.funding_interval_h || 0
+          );
+          if (!Number.isFinite(rate) || !Number.isFinite(ih) || ih <= 0)
+            return null;
+          const side = (p?.side || "").toLowerCase();
+          const sign = side === "short" ? +1 : side === "long" ? -1 : 0;
+          acc += sign * rate * (24 / ih);
+        }
+        // anualizado en %
+        return acc * 365 * 100;
+      }
+
+      // === OPEN POSITIONS ===
+      function fmt(x, d = 4) {
+        const n = Number(x);
+        return Number.isFinite(n) ? n.toFixed(d) : "";
+      }
+      function riskClass(pct) {
+        if (!Number.isFinite(pct)) return "";
+        if (pct <= 10) return "risk-red";
+        if (pct <= 20) return "risk-orange";
+        if (pct <= 35) return "risk-yellow";
+        return "risk-green";
+      }
+      loadFundingData()
+        .then(() => {
+          return fetch("/api/positions");
+        })
+        .then((r) => r.json())
+        .then((data) => {
+          const container = document.getElementById("positions-container");
+          container.innerHTML = "";
+          const rows = Array.isArray(data?.positions) ? data.positions : [];
+
+          // Limpiar cache de posiciones cerradas
+          cleanupPositionCache(rows);
+
+          // Agrupar por símbolo base
+          const grouped = {};
+          rows.forEach((p) => {
+            const sym = cleanSymbol(p.symbol);
+            if (!grouped[sym]) grouped[sym] = [];
+            grouped[sym].push(p);
+          });
+
+          Object.entries(grouped).forEach(([symbol, positions]) => {
+            const baseSym = cleanSymbol(symbol);
+            const now = new Date();
+            const d0 = ymd(now);
+            const d1 = ymd(
+              new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+            );
+            const d2 = ymd(
+              new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2)
+            );
+            const f3 = {
+              d0: sumFundingForDay(baseSym, d0),
+              d1: sumFundingForDay(baseSym, d1),
+              d2: sumFundingForDay(baseSym, d2),
+            };
+
+            // ⬇️ A partir de aquí pega tal cual tu código de render (lo dejo íntegro)
+            let card = `
+            <div class="strategy-card">
+            <div class="strategy-header">
+              <div class="d-flex w-100 justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  ${cleanSymbol(symbol)}
+                  ${
+                    positions.length > 1
+                      ? '<span class="badge bg-warning text-dark">DELTA NEUTRAL</span>'
+                      : ""
+                  }
+                </h5>
+                <div class="d-flex gap-3 small">
+                  <div><span class="text-white-50">Funding D-2:</span> ${fmtFundingVal(
+                    f3.d2
+                  )}</div>
+                  <div><span class="text-white-50">D-1:</span> ${fmtFundingVal(
+                    f3.d1
+                  )}</div>
+                  <div><span class="text-white-50">Hoy:</span> ${fmtFundingVal(
+                    f3.d0
+                  )}</div>
+                  <!-- Nuevo: Spread entre patas -->
+                  <div><span class="text-white-50">Spread:</span> <span id="spread-${cleanSymbol(
+                    symbol
+                  )}">-</span></div>
+                </div>
+              </div>
+            </div>
+
+            <table class="table table-sm table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Exchange</th><th>Symbol</th><th>Side</th><th>Size</th>
+                  <th>Entry</th><th>Mark</th><th>Liq.</th>
+                  <th>Inc. to Liq</th><th>Closed %</th>
+                  <th>Notional</th><th>Funding rate</th>
+                  <th>Interval</th><th>Unrealized PnL</th><th>Fee</th>
+                  <th>Funding Fee</th><th>Realized PnL</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+            let totalNotional = 0,
+              totalMargin = 0,
+              sizeLong = 0,
+              sizeShort = 0,
+              unrealizedTotal = 0,
+              realizedTotal = 0;
+
+            positions.forEach((p) => {
+              const side = (p?.side || "").toLowerCase();
+              const sideLabel = side ? side.toUpperCase() : "-";
+              const originalSize = Number(p?.size || 0);
+              const cachedSize = getCachedSize(
+                p?.exchange || "",
+                p?.symbol || "",
+                originalSize
+              );
+              const displaySize = cachedSize;
+              const entry = Number(p?.entry_price || 0);
+              const mark = Number(p?.mark_price || 0);
+              const liq = Number(p?.liquidation_price || 0);
+              const notional = Number(
+                p?.notional || (mark > 0 ? Math.abs(displaySize * mark) : 0)
+              );
+
+              totalNotional += notional;
+              totalMargin += Number(p?.margin || 0);
+              unrealizedTotal += Number(p?.unrealized_pnl || 0);
+              realizedTotal += Number(p?.realized_pnl || 0);
+              if (side === "long") sizeLong += displaySize;
+              if (side === "short") sizeShort += displaySize;
+
+              const incToLiqPct =
+                mark > 0 && liq > 0
+                  ? (Math.abs(mark - liq) / mark) * 100
+                  : null;
+              const initSize = Number(
+                p?.initial_size ??
+                  Number(p?.size || 0) + Number(p?.closed_size || 0)
+              );
+              const closedSize = Number(p?.closed_size || 0);
+              const closedPct =
+                initSize > 0 ? (100 * closedSize) / initSize : null;
+
+              card += `
+              <tr>
+                <td>${p?.exchange || ""}</td>
+                <td>${cleanSymbol(p?.symbol)}</td>
+                <td><span class="badge ${
+                  side === "long"
+                    ? "badge-long"
+                    : side === "short"
+                    ? "badge-short"
+                    : "bg-secondary"
+                }">${sideLabel}</span></td>
+                <td>${fmt(displaySize, 2)}</td>
+                <td>${fmt(entry)}</td>
+                <td>${fmt(mark)}</td>
+                <td>${fmt(liq)}</td>
+                <td>${
+                  incToLiqPct === null
+                    ? "-"
+                    : `<span class="risk-pill ${riskClass(
+                        incToLiqPct
+                      )}">${incToLiqPct.toFixed(1)}%</span>`
+                }</td>
+                <td>${
+                  closedPct === null ? "-" : closedPct.toFixed(1) + "%"
+                }</td>
+                <td>$${fmt(notional, 2)}</td>
+                <td>${
+                  (p?.funding_rate ?? "") === ""
+                    ? "-"
+                    : (Number(p.funding_rate) * 100).toFixed(4) + "%"
+                }</td>
+                <td>${
+                  p?.funding_interval_hours ?? p?.funding_interval_h ?? "-"
+                }</td>
+                <td class="${
+                  (Number(p?.unrealized_pnl) || 0) >= 0
+                    ? "pnl-positive"
+                    : "pnl-negative"
+                }">$${fmt(p?.unrealized_pnl, 2)}</td>
+                <td class="${
+                  (Number(p?.fee) || 0) >= 0 ? "pnl-positive" : "pnl-negative"
+                }">$${fmt(p?.fee, 2)}</td>
+                <td class="${
+                  (Number(p?.funding_fee) || 0) >= 0
+                    ? "pnl-positive"
+                    : "pnl-negative"
+                }">$${fmt(p?.funding_fee, 2)}</td>
+                <td class="${
+                  (Number(p?.realized_pnl) || 0) >= 0
+                    ? "pnl-positive"
+                    : "pnl-negative"
+                }">$${fmt(p?.realized_pnl, 2)}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-warning edit-size-btn" 
+                          data-exchange="${p?.exchange || ""}" 
+                          data-symbol="${p?.symbol || ""}" 
+                          data-current-size="${fmt(displaySize, 2)}">
+                    ✏️ Edit Size
+                  </button>
+                </td>
+              </tr>`;
+            });
+
+            card += `</tbody></table>
+            <div class="summary-grid">
+              <div class="summary-item"><h6>Total Notional</h6><p>$${fmt(
+                totalNotional,
+                2
+              )}</p></div>
+              <div class="summary-item"><h6>Total Margin</h6><p>$${fmt(
+                totalMargin,
+                2
+              )}</p></div>
+              <div class="summary-item"><h6>Size Long</h6><p>${fmt(
+                sizeLong,
+                2
+              )}</p></div>
+              <div class="summary-item"><h6>Size Short</h6><p>${fmt(
+                sizeShort,
+                2
+              )}</p></div>
+              <div class="summary-item"><h6>Net Exposure</h6><p>${fmt(
+                sizeLong - sizeShort,
+                2
+              )}</p></div>
+              <div class="summary-item">
+                <h6>Funding Rate APR</h6>
+                <p>${(() => {
+                  const v = calcNetFundingAPR(positions);
+                  return v === null ? "-" : v.toFixed(2) + "%";
+                })()}</p>
+              </div>
+              <div class="summary-item">
+                <h6>Funding Rate Position APR</h6>
+                <p>${
+                  positions?.[0]?.group_funding_position_apr ??
+                  positions?.group_funding_position_apr ??
+                  "-"
+                }</p>
+              </div>
+              <div class="summary-item"><h6>Unrealized PnL</h6><p class="${
+                unrealizedTotal >= 0 ? "pnl-positive" : "pnl-negative"
+              }">$${fmt(unrealizedTotal, 2)}</p></div>
+              <div class="summary-item"><h6>Realized PnL</h6><p class="${
+                realizedTotal >= 0 ? "pnl-positive" : "pnl-negative"
+              }">$${fmt(realizedTotal, 2)}</p></div>
+            </div>
+          </div>`;
+            container.innerHTML += card;
+
+            // Agregar cálculo de spread
+            renderSpread(symbol, positions);
+          });
+        })
+        .catch((err) => {
+          console.error("❌ Error loading /api/positions", err);
+          document.getElementById("positions-container").innerHTML =
+            "<p>Error loading positions.</p>";
+        });
+
+      // === EVENT LISTENERS PARA EDITAR TAMAÑO ===
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("edit-size-btn")) {
+          const exchange = e.target.getAttribute("data-exchange");
+          const symbol = e.target.getAttribute("data-symbol");
+          const currentSize = e.target.getAttribute("data-current-size");
+
+          document.getElementById("edit-exchange").value = exchange;
+          document.getElementById("edit-symbol").value = symbol;
+          document.getElementById("edit-size").value = currentSize;
+
+          const modal = new bootstrap.Modal(
+            document.getElementById("editSizeModal")
+          );
+          modal.show();
+        }
+      });
+
+      document
+        .getElementById("save-size-btn")
+        .addEventListener("click", function () {
+          const exchange = document.getElementById("edit-exchange").value;
+          const symbol = document.getElementById("edit-symbol").value;
+          const newSize = document.getElementById("edit-size").value;
+
+          if (!exchange || !symbol || !newSize) {
+            alert("Please fill all fields");
+            return;
+          }
+
+          saveSizeToCache(exchange, symbol, newSize);
+
+          // Cerrar modal
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("editSizeModal")
+          );
+          modal.hide();
+
+          // Actualizar UI inmediatamente
+          updatePositionSizeInUI(exchange, symbol, newSize);
+        });
+
+      // === FUNDING FEES CON PAGINACIÓN ===
+
+      let currentPage = 1;
+      let itemsPerPage = 7; // Por defecto últimos 7 días
+
+      function loadFundingData() {
+        return fetch("/api/funding")
+          .then((r) => r.json())
+          .then((data) => {
+            // ⬇️ normalizamos 'timestamp' y 'symbol' para TODOS los adapters
+            allFundingData = (data.funding || [])
+              .map((f) => {
+                const ts = toMs(f.timestamp ?? f.created_at ?? f.time);
+                const sym =
+                  f.symbol || f.market || f.instId || f.instrument || "";
+                const inc = Number(f.income ?? f.funding_fee ?? 0);
+                return { ...f, timestamp: ts, symbol: sym };
+              })
+              .filter((f) => Number.isFinite(f.timestamp)); // quitamos filas sin fecha válida
+
+            // orden más reciente primero
+            allFundingData.sort((a, b) => b.timestamp - a.timestamp);
+
+            applyDaysFilter();
+          })
+          .catch((err) => {
+            console.error("❌ Error loading funding fees:", err);
+            document.getElementById("funding-container").innerHTML =
+              "<p>Error loading funding fees</p>";
+          });
+      }
+
+      function applyDaysFilter() {
+        const days = parseInt(document.getElementById("daysSelector").value);
+        const showEst =
+          document.getElementById("toggleEstimates")?.checked !== false;
+
+        let filteredData = allFundingData.slice();
+
+        if (!showEst) {
+          filteredData = filteredData.filter(
+            (f) => !f.estimated && f.type !== "FUNDING_ESTIMATE"
+          );
+        }
+
+        if (days > 0) {
+          const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+          filteredData = filteredData.filter(
+            (f) => Number(f.timestamp) >= cutoff
+          );
+        }
+
+        renderFundingPagination(filteredData);
+      }
+      document
+        .getElementById("toggleEstimates")
+        ?.addEventListener("change", applyDaysFilter);
+
+      function renderFundingPagination(filteredData) {
+        // Agrupar por día (YYYY-MM-DD)
+        const grouped = {};
+        filteredData.forEach((f) => {
+          const day = f.timestamp
+            ? new Date(f.timestamp).toISOString().split("T")[0]
+            : "Unknown";
+          if (!grouped[day]) grouped[day] = [];
+          grouped[day].push(f);
+        });
+
+        // Convertir a array y ordenar por fecha descendente
+        const daysArray = Object.entries(grouped)
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+          .map(([day, rows]) => ({ day, rows }));
+
+        const totalPages = Math.ceil(daysArray.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const currentDays = daysArray.slice(startIndex, endIndex);
+
+        // Renderizar contenido
+        renderFundingContent(currentDays);
+
+        // Renderizar paginación
+        renderPaginationControls(totalPages);
+      }
+
+      function renderFundingContent(days) {
+        const container = document.getElementById("funding-container");
+
+        if (days.length === 0) {
+          container.innerHTML =
+            "<p>No funding data available for the selected period.</p>";
+          return;
+        }
+
+        let html = "";
+        days.forEach(({ day, rows }) => {
+          html += `
+            <div class="strategy-card">
+              <div class="strategy-header">
+                <h5>${day}</h5>
+                <p>
+                  Total Funding: 
+                  <span class="${
+                    rows.reduce((sum, f) => sum + (f.income || 0), 0) >= 0
+                      ? "pnl-positive"
+                      : "pnl-negative"
+                  }">
+                    ${rows
+                      .reduce((sum, f) => sum + (f.income || 0), 0)
+                      .toFixed(2)}
+                  </span>
+                </p>
+              </div>
+              <table class="table table-sm table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Exchange</th>
+                    <th>Symbol</th>
+                    <th>Income</th>
+                    <th>Asset</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    ${rows
+                      .map((f) => {
+                        const isEst = !!(
+                          f.estimated || f.type === "FUNDING_ESTIMATE"
+                        );
+                        const cls =
+                          (f.income || 0) >= 0
+                            ? "pnl-positive"
+                            : "pnl-negative";
+                        const amt = (f.income || 0).toFixed(2);
+                        return `
+                        <tr class="${isEst ? "funding-estimate" : ""}">
+                        <td>${
+                          f.timestamp
+                            ? new Date(f.timestamp).toLocaleTimeString()
+                            : ""
+                        }</td>
+                        <td>${f.exchange}</td>
+                        <td>${cleanSymbol(f.symbol)}</td>
+                        <td class="${cls}">${isEst ? "≈ " : ""}${amt}</td>
+                        <td>${f.asset}</td>
+                        </tr>`;
+                      })
+                      .join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function renderPaginationControls(totalPages) {
+        const paginationTop = document.getElementById("fundingPagination");
+        const paginationBottom = document.getElementById(
+          "fundingPaginationBottom"
+        );
+
+        if (totalPages <= 1) {
+          paginationTop.innerHTML = "";
+          paginationBottom.innerHTML = "";
+          return;
+        }
+
+        const paginationHTML = `
+          <button class="page-btn" onclick="changePage(1)" ${
+            currentPage === 1 ? "disabled" : ""
+          }>
+            First
+          </button>
+          <button class="page-btn" onclick="changePage(${currentPage - 1})" ${
+          currentPage === 1 ? "disabled" : ""
+        }>
+            Previous
+          </button>
+          <span style="color: #e8e8e8; margin: 0 10px;">
+            Page ${currentPage} of ${totalPages}
+          </span>
+          <button class="page-btn" onclick="changePage(${currentPage + 1})" ${
+          currentPage === totalPages ? "disabled" : ""
+        }>
+            Next
+          </button>
+          <button class="page-btn" onclick="changePage(${totalPages})" ${
+          currentPage === totalPages ? "disabled" : ""
+        }>
+            Last
+          </button>
+        `;
+
+        paginationTop.innerHTML = paginationHTML;
+        paginationBottom.innerHTML = paginationHTML;
+      }
+
+      function changePage(page) {
+        const days = parseInt(document.getElementById("daysSelector").value);
+        const showEst =
+          document.getElementById("toggleEstimates")?.checked !== false;
+
+        let filteredData = allFundingData.slice();
+        if (!showEst)
+          filteredData = filteredData.filter(
+            (f) => !f.estimated && f.type !== "FUNDING_ESTIMATE"
+          );
+        if (days > 0) {
+          const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+          filteredData = filteredData.filter(
+            (f) => Number(f.timestamp) >= cutoff
+          );
+        }
+
+        // re-agrupa y calcula totalPages igual que ahora...
+        const grouped = {};
+        filteredData.forEach((f) => {
+          const day = new Date(f.timestamp).toISOString().split("T")[0];
+          (grouped[day] ??= []).push(f);
+        });
+
+        const daysArray = Object.entries(grouped)
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+          .map(([day, rows]) => ({ day, rows }));
+
+        const totalPages = Math.ceil(daysArray.length / itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+          currentPage = page;
+          renderFundingPagination(filteredData);
+        }
+      }
+
+      // Event listeners
+      document
+        .getElementById("daysSelector")
+        .addEventListener("change", function () {
+          currentPage = 1;
+          applyDaysFilter();
+        });
+
+      document
+        .getElementById("refreshFunding")
+        .addEventListener("click", function () {
+          loadFundingData();
+        });
+
+      // === CLOSED POSITIONS ===
+      function pricePnlFromRow(p) {
+        // Usa el que viene de la DB/API (FIFO)
+        const v = p && (p.pnl ?? p.price_pnl);
+        if (v !== undefined && v !== null && !Number.isNaN(Number(v))) {
+          return Number(v);
+        }
+        // Fallback simple si no viniera pnl
+        const side = (p.side || "").toLowerCase();
+        const entry = Number(p.entry_price || 0);
+        const close = Number(p.close_price || 0);
+        const size = Number(p.size || 0);
+        return side === "short"
+          ? (entry - close) * size
+          : (close - entry) * size;
+      }
+
+      function summarizeGroupFromRows(rows) {
+        return rows.reduce(
+          (acc, p) => {
+            const pnl = pricePnlFromRow(p);
+            const fees = Number(p.fees ?? p.fee_total ?? 0);
+            const funding = Number(p.funding_fee ?? p.funding_total ?? 0);
+            const realized = Number(p.realized_pnl ?? 0);
+            const margin = marginFromRow(p);
+
+            acc.pnl += pnl;
+            acc.fees += fees;
+            acc.funding += funding;
+            acc.realized += realized;
+            acc.margin += margin;
+            return acc;
+          },
+          { pnl: 0, fees: 0, funding: 0, realized: 0, margin: 0 }
+        );
+      }
+
+      function marginFromRow(p) {
+        // Preferir campos del backend si existen
+        const m = p?.margin ?? p?.initial_margin ?? p?.isolated_margin;
+        if (m !== undefined && m !== null && Number.isFinite(Number(m))) {
+          return Number(m);
+        }
+        // Fallback: size * entry / leverage (si hay leverage)
+        const size = Number(p?.size ?? 0);
+        const entry = Number(p?.entry_price ?? 0);
+        const lev = Number(p?.leverage ?? 0);
+        if (lev > 0) return (Math.abs(size) * entry) / lev;
+
+        // Último recurso: 0
+        return 0;
+      }
+
+      function pnlPctFromRow({ pnl, fees, funding, realized, margin }) {
+        // ROI sobre margen: (pnl + funding + realized + fees) / margin
+        const total =
+          Number(pnl) + Number(funding) + Number(realized) + Number(fees);
+        if (!margin || !Number.isFinite(margin) || margin === 0) return null;
+        return (total / margin) * 100;
+      }
+
+      function aprFromRow({ pnlPct, openTs, closeTs }) {
+        if (pnlPct === null || pnlPct === undefined) return null;
+        const ot = Number(openTs);
+        const ct = Number(closeTs);
+        // open_date/close_date también pueden venir como ISO; si no son numéricos, intentamos Date.parse
+        const openMs = Number.isFinite(ot)
+          ? ot * 1000
+          : Date.parse(openTs) || NaN;
+        const closeMs = Number.isFinite(ct)
+          ? ct * 1000
+          : Date.parse(closeTs) || NaN;
+        if (
+          !Number.isFinite(openMs) ||
+          !Number.isFinite(closeMs) ||
+          closeMs <= openMs
+        )
+          return null;
+        const days = (closeMs - openMs) / (1000 * 60 * 60 * 24);
+        if (days <= 0) return null;
+        return pnlPct * (365 / days);
+      }
+
+      function tsToStr(ts) {
+        if (!ts) return "";
+        // soporta tanto open_date/close_date string como open_time/close_time en segundos
+        if (typeof ts === "string" && ts.includes("T"))
+          return ts.replace("T", " ").replace("Z", "");
+        const n = Number(ts);
+        return Number.isFinite(n) ? new Date(n * 1000).toLocaleString() : "";
+      }
+
+      // === CLOSED TOTALS (Realized PnL) ===
+      function _closeTsMsFromRow(p) {
+        // usa close_time (s o ms) o close_date ISO
+        const raw = p?.close_time ?? p?.close_date;
+        return toMs(raw); // usa tu helper existente
+      }
+
+      function _realizedFromRow(p) {
+        const v = Number(p?.realized_pnl ?? 0);
+        return Number.isFinite(v) ? v : 0;
+      }
+
+      function _flattenClosed(list) {
+        // Soporta formato agrupado { positions:[...] } o filas planas
+        const out = [];
+        for (const g of list || []) {
+          if (Array.isArray(g.positions) && g.positions.length) {
+            out.push(...g.positions);
+          } else {
+            out.push(g);
+          }
+        }
+        return out;
+      }
+
+      function renderClosedTotals(list) {
+        const rows = _flattenClosed(list);
+        const now = Date.now();
+        const d7 = now - 7 * 24 * 3600 * 1000;
+        const d30 = now - 30 * 24 * 3600 * 1000;
+
+        let sumAll = 0,
+          sum7 = 0,
+          sum30 = 0;
+
+        for (const p of rows) {
+          const r = _realizedFromRow(p);
+          const ct = _closeTsMsFromRow(p);
+          sumAll += r;
+          if (Number.isFinite(ct)) {
+            if (ct >= d7) sum7 += r;
+            if (ct >= d30) sum30 += r;
+          }
+        }
+
+        const el = document.getElementById("closedTotals");
+        if (!el) return;
+
+        const item = (label, val) => `
+        <div class="header-summary-item">
+            <div class="header-summary-label">${label}</div>
+            <div class="header-summary-value ${
+              val >= 0 ? "text-success" : "text-danger"
+            }">
+            $${val.toFixed(2)}
+            </div>
+        </div>`;
+
+        el.innerHTML = `
+        ${item("Realized (All)", sumAll)}
+        ${item("Realized (7d)", sum7)}
+        ${item("Realized (30d)", sum30)}
+    `;
+      }
+
+      // === CLOSED POSITIONS CON FILTROS Y PAGINACIÓN ===
+      let closedPositionsData = [];
+      let currentClosedPage = 1;
+      let closedPageSize = 10;
+      let closedFilters = {
+        exchange: "",
+        symbol: "",
+        side: "",
+        date: "2025-09-01",
+      };
+
+      // Función para aplicar filtros a los datos de closed positions
+      function applyClosedFilters() {
+        let filtered = closedPositionsData;
+
+        // Filtro por exchange
+        if (closedFilters.exchange) {
+          filtered = filtered.filter((group) => {
+            // Comprobamos si alguna posición en el grupo tiene el exchange que coincide
+            return group.positions.some((p) =>
+              p.exchange
+                .toLowerCase()
+                .includes(closedFilters.exchange.toLowerCase())
+            );
+          });
+        }
+
+        // Filtro por symbol
+        if (closedFilters.symbol) {
+          filtered = filtered.filter((group) => {
+            return group.positions.some((p) =>
+              cleanSymbol(p.symbol)
+                .toLowerCase()
+                .includes(closedFilters.symbol.toLowerCase())
+            );
+          });
+        }
+
+        // Filtro por side
+        if (closedFilters.side) {
+          filtered = filtered.filter((group) => {
+            return group.positions.some(
+              (p) => p.side.toUpperCase() === closedFilters.side
+            );
+          });
+        }
+
+        // Filtro por fecha (a partir del 1 de septiembre de 2025)
+        if (closedFilters.date) {
+          const filterDate = new Date(closedFilters.date);
+          filtered = filtered.filter((group) => {
+            const closeDate = new Date(group.close_date || group.close_time);
+            return closeDate >= filterDate;
+          });
+        }
+
+        return filtered;
+      }
+
+      // Función para renderizar la paginación de closed positions
+      function renderClosedPagination(filteredData) {
+        const totalPages = Math.ceil(filteredData.length / closedPageSize);
+        const paginationTop = document.getElementById("closedPaginationTop");
+        const paginationBottom = document.getElementById(
+          "closedPaginationBottom"
+        );
+        const startItem = (currentClosedPage - 1) * closedPageSize + 1;
+        const endItem = Math.min(
+          currentClosedPage * closedPageSize,
+          filteredData.length
+        );
+
+        const paginationHTML = `
+        <div class="closed-pagination-info me-3">
+            Showing ${startItem} to ${endItem} of ${filteredData.length} entries
+        </div>
+        <button class="page-btn" onclick="changeClosedPage(1)" ${
+          currentClosedPage === 1 ? "disabled" : ""
+        }>
+            First
+        </button>
+        <button class="page-btn" onclick="changeClosedPage(${
+          currentClosedPage - 1
+        })" ${currentClosedPage === 1 ? "disabled" : ""}>
+            Previous
+        </button>
+        <span style="color: #e8e8e8; margin: 0 10px;">
+            Page ${currentClosedPage} of ${totalPages}
+        </span>
+        <button class="page-btn" onclick="changeClosedPage(${
+          currentClosedPage + 1
+        })" ${currentClosedPage === totalPages ? "disabled" : ""}>
+            Next
+        </button>
+        <button class="page-btn" onclick="changeClosedPage(${totalPages})" ${
+          currentClosedPage === totalPages ? "disabled" : ""
+        }>
+            Last
+        </button>
+    `;
+
+        if (paginationTop) paginationTop.innerHTML = paginationHTML;
+        if (paginationBottom) paginationBottom.innerHTML = paginationHTML;
+      }
+
+      // Función para cambiar de página en closed positions
+      function changeClosedPage(page) {
+        const filteredData = applyClosedFilters();
+        const totalPages = Math.ceil(filteredData.length / closedPageSize);
+
+        if (page < 1 || page > totalPages) return;
+
+        currentClosedPage = page;
+        renderClosedPositions(filteredData);
+      }
+
+      // Función para renderizar las posiciones cerradas (con paginación)
+      function renderClosedPositions(data) {
+        const container = document.getElementById("closedPositions");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const filteredData = applyClosedFilters();
+        const totalPages = Math.ceil(filteredData.length / closedPageSize);
+        const startIndex = (currentClosedPage - 1) * closedPageSize;
+        const endIndex = startIndex + closedPageSize;
+        const currentData = filteredData.slice(startIndex, endIndex);
+
+        renderClosedPagination(filteredData);
+
+        if (currentData.length === 0) {
+          container.innerHTML =
+            '<p class="text-muted">No closed positions found.</p>';
+          return;
+        }
+
+        currentData.forEach((group) => {
+          const rows =
+            Array.isArray(group.positions) && group.positions.length
+              ? group.positions
+              : [group];
+
+          const baseSymbol = cleanSymbol(rows[0]?.symbol || group.symbol || "");
+          const openStr = group.open_date || tsToStr(group.open_time);
+          const closeStr = group.close_date || tsToStr(group.close_time);
+
+          // Contar LONG/SHORT para badge DN
+          let longCount = 0,
+            shortCount = 0;
+
+          const rowsHtml = rows
+            .map((p) => {
+              let sideLabel = (p.side || "").toUpperCase();
+              if (sideLabel === "CLOSED") {
+                sideLabel =
+                  Number(p.close_price) >= Number(p.entry_price)
+                    ? "LONG"
+                    : "SHORT";
+              }
+              // Tratar SPOTBUY como LONG para delta neutral
+              if (sideLabel === "LONG" || sideLabel === "SPOTBUY") longCount++;
+              if (sideLabel === "SHORT") shortCount++;
+
+              const pnl = pricePnlFromRow(p);
+              const pnlClass = pnl >= 0 ? "text-success" : "text-danger";
+
+              const feeVal = Number(p.fees ?? p.fee_total ?? 0);
+              const fundingVal = Number(p.funding_fee ?? p.funding_total ?? 0);
+              const realizedVal = Number(p.realized_pnl ?? 0);
+              const feeClass = feeVal < 0 ? "text-danger" : "text-success";
+              const fundingClass =
+                fundingVal < 0 ? "text-danger" : "text-success";
+              const realizedClass =
+                realizedVal >= 0 ? "text-success" : "text-danger";
+
+              // NUEVOS CAMPOS
+              const marginVal = marginFromRow(p);
+              const pnlPctVal = pnlPctFromRow({
+                pnl,
+                fees: feeVal,
+                funding: fundingVal,
+                realized: realizedVal,
+                margin: marginVal,
+              });
+
+              const aprVal = aprFromRow({
+                pnlPct: pnlPctVal,
+                openTs: p.open_time ?? p.open_date,
+                closeTs: p.close_time ?? p.close_date,
+              });
+
+              return `
+                <tr>
+                    <td>${p.exchange}</td>
+                    <td>${cleanSymbol(p.symbol)}</td>
+                    <td>
+                    <span class="badge ${
+                      sideLabel === "LONG" || sideLabel === "SPOTBUY"
+                        ? "bg-success"
+                        : sideLabel === "SWAPSTABLE"
+                        ? "bg-info"
+                        : "bg-danger"
+                    } compact-badge">${sideLabel}</span>
+                    </td>
+                    <td>${Number(p.size).toFixed(2)}</td>
+                    <td>${Number(p.entry_price).toFixed(4)}</td>
+                    <td>${Number(p.close_price).toFixed(4)}</td>
+                    <td>$${Number(marginVal || 0).toFixed(2)}</td>
+                    <td class="${pnlClass} fw-bold" title="FIFO (DB)">$${pnl.toFixed(
+                2
+              )}</td>
+                    <td class="${feeClass} fw-bold">$${feeVal.toFixed(2)}</td>
+                    <td class="${fundingClass} fw-bold">$${fundingVal.toFixed(
+                2
+              )}</td>
+                    <td class="${realizedClass} fw-bold">$${realizedVal.toFixed(
+                2
+              )}</td>
+                    <td>${
+                      pnlPctVal === null ? "-" : pnlPctVal.toFixed(2) + "%"
+                    }</td>
+                    <td>${aprVal === null ? "-" : aprVal.toFixed(2) + "%"}</td>
+                </tr>`;
+            })
+            .join("");
+
+          const totals = summarizeGroupFromRows(rows);
+          const dn = longCount > 0 && shortCount > 0;
+          const dnBadge = dn
+            ? '<span class="badge bg-warning text-dark compact-badge ms-2">DELTA NEUTRAL</span>'
+            : "";
+
+          container.innerHTML += `
+            <div class="closed-position-card">
+                <div class="closed-position-header">
+                    <!-- IZQUIERDA: símbolo + DN + fechas en línea -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
+                    <h6 class="mb-0">${baseSymbol} ${dnBadge}</h6>
+                    <span class="pos-dates small text-white-50">
+                        ${openStr ? `${openStr} &rarr; ` : ""}${closeStr || ""}
+                    </span>
+                    </div>
+
+                    <!-- DERECHA: TOTALES (se quedan arriba a la derecha) -->
+                    <div class="header-summary d-flex align-items-center gap-3">
+                    <div class="header-summary-item">
+                        <div class="header-summary-label">Total PnL</div>
+                        <div class="header-summary-value ${
+                          totals.pnl >= 0 ? "text-success" : "text-danger"
+                        }" title="FIFO (DB)">
+                        $${totals.pnl.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="header-summary-item">
+                        <div class="header-summary-label">Total Fees</div>
+                        <div class="header-summary-value ${
+                          totals.fees < 0 ? "text-danger" : "text-success"
+                        }">
+                        $${totals.fees.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="header-summary-item">
+                        <div class="header-summary-label">Total Funding</div>
+                        <div class="header-summary-value ${
+                          totals.funding >= 0 ? "text-success" : "text-danger"
+                        }">
+                        $${totals.funding.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="header-summary-item">
+                        <div class="header-summary-label">Total Realized</div>
+                        <div class="header-summary-value ${
+                          totals.realized >= 0 ? "text-success" : "text-danger"
+                        }">
+                        $${totals.realized.toFixed(2)}
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="closed-position-body">
+                    <table class="closed-position-table">
+                    <thead>
+                        <tr>
+                        <th>Exchange</th><th>Symbol</th><th>Side</th><th>Size</th>
+                        <th>Entry</th><th>Close</th><th>Margin</th>
+                        <th>PnL</th><th>Fees</th><th>Funding</th><th>Realized</th>
+                        <th>PnL %</th><th>APR</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+            </div>`;
+        });
+      }
+
+      // Agregar esta función para inicializar los filtros
+      function initializeClosedFilters() {
+        closedFilters = {
+          exchange: "",
+          symbol: "",
+          side: "",
+          date: "2025-09-01",
+        };
+
+        // Establecer valores por defecto en los inputs
+        const filterExchange = document.getElementById("filterExchange");
+        const filterSymbol = document.getElementById("filterSymbol");
+        const filterSide = document.getElementById("filterSide");
+        const filterDate = document.getElementById("filterDate");
+
+        if (filterExchange) filterExchange.value = "";
+        if (filterSymbol) filterSymbol.value = "";
+        if (filterSide) filterSide.value = "";
+        if (filterDate) filterDate.value = "2025-09-01";
+      }
+
+      // Función para aplicar filtros y renderizar
+      function applyClosedFiltersAndRender() {
+        currentClosedPage = 1; // Reset a la primera página
+        const filteredData = applyClosedFilters();
+        renderClosedTotals(filteredData);
+        renderClosedPositions(filteredData);
+      }
+
+      // Modificar la función loadClosedPositions para cargar datos iniciales
+      async function loadClosedPositions() {
+        try {
+          console.log("Loading closed positions from API...");
+          const res = await fetch("/api/closed_positions");
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          const data = await res.json();
+          console.log("[UI] /api/closed_positions payload:", data);
+
+          closedPositionsData = Array.isArray(data?.closed_positions)
+            ? data.closed_positions
+            : [];
+
+          console.log(`Loaded ${closedPositionsData.length} closed positions`);
+
+          // Ordenar por fecha de cierre descendente (más recientes primero)
+          closedPositionsData.sort((a, b) => {
+            const timeA = toMs(a.close_time || a.close_date);
+            const timeB = toMs(b.close_time || b.close_date);
+            return timeB - timeA; // Descendente
+          });
+
+          // Inicializar filtros
+          initializeClosedFilters();
+
+          // Aplicar filtros y renderizar
+          applyClosedFiltersAndRender();
+        } catch (error) {
+          console.error("Error loading closed positions:", error);
+          const container = document.getElementById("closedPositions");
+          if (container) {
+            container.innerHTML =
+              '<p class="text-danger">Error loading closed positions: ' +
+              error.message +
+              "</p>";
+          }
+        }
+      }
+
+      // Modificar los event listeners para inicializar correctamente
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM loaded, initializing closed positions...");
+
+        // CARGAR DATOS INICIALES
+        loadClosedPositions();
+
+        // Configurar event listeners para filtros
+        const applyFiltersBtn = document.getElementById("applyFilters");
+        const pageSizeSelect = document.getElementById("pageSizeSelect");
+        const filterExchange = document.getElementById("filterExchange");
+        const filterSymbol = document.getElementById("filterSymbol");
+        const filterSide = document.getElementById("filterSide");
+        const filterDate = document.getElementById("filterDate");
+        const refreshClosed = document.getElementById("refreshClosed");
+
+        if (applyFiltersBtn) {
+          applyFiltersBtn.addEventListener(
+            "click",
+            applyClosedFiltersAndRender
+          );
+        }
+
+        if (pageSizeSelect) {
+          pageSizeSelect.addEventListener("change", function () {
+            closedPageSize = parseInt(this.value);
+            applyClosedFiltersAndRender();
+          });
+        }
+
+        if (filterExchange) {
+          filterExchange.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") applyClosedFiltersAndRender();
+          });
+          filterExchange.addEventListener("input", function () {
+            closedFilters.exchange = this.value;
+          });
+        }
+
+        if (filterSymbol) {
+          filterSymbol.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") applyClosedFiltersAndRender();
+          });
+          filterSymbol.addEventListener("input", function () {
+            closedFilters.symbol = this.value;
+          });
+        }
+
+        if (filterSide) {
+          filterSide.addEventListener("change", function () {
+            closedFilters.side = this.value;
+            applyClosedFiltersAndRender();
+          });
+        }
+
+        if (filterDate) {
+          filterDate.addEventListener("change", function () {
+            closedFilters.date = this.value;
+            applyClosedFiltersAndRender();
+          });
+        }
+
+        if (refreshClosed) {
+          refreshClosed.addEventListener("click", loadClosedPositions);
+        }
+      });
+
+      // También agregar un event listener para cuando se muestre la pestaña de Closed Positions
+      document.addEventListener("DOMContentLoaded", function () {
+        const closedTab = document.getElementById("closed-tab");
+        if (closedTab) {
+          closedTab.addEventListener("shown.bs.tab", function () {
+            console.log("Closed tab shown");
+            // Si no hay datos cargados, cargarlos
+            if (closedPositionsData.length === 0) {
+              loadClosedPositions();
+            }
+          });
+        }
+        document
+          .getElementById("btn-import-ourbit")
+          ?.addEventListener("click", async () => {
+            const exchange = document.getElementById("opt-exchange").value;
+            const product = document.getElementById("opt-product").value;
+            const fFund = document.getElementById("opt-fund").files[0] || null;
+            const fFills =
+              document.getElementById("opt-fills").files[0] || null;
+
+            const st = document.getElementById("import-status");
+            const fd = new FormData();
+            fd.append("exchange", exchange);
+            fd.append("product_type", product);
+            if (fFund) fd.append("fund_flow", fFund);
+            if (fFills) fd.append("fills", fFills);
+
+            st.textContent = "Importando…";
+            try {
+              const res = await fetch("/api/manual/import", {
+                method: "POST",
+                body: fd,
+              });
+              const data = await res.json();
+              if (!res.ok)
+                throw new Error(data?.error || "Error de importación");
+              st.textContent = `✅ Funding: ${data.funding_inserted} | Closed insertados: ${data.closed_inserted} (roundtrips detectados: ${data.roundtrips_detected})`;
+            } catch (e) {
+              st.textContent = "❌ " + e.message;
+            }
+          });
+        function parseLocalDateTimeToSeconds(value) {
+          if (!value) return 0;
+          // value viene como 'YYYY-MM-DDTHH:mm' en hora local → a epoch segundos
+          const ms = Date.parse(value);
+          return Number.isFinite(ms) ? Math.floor(ms / 1000) : 0;
+        }
+
+        document
+          .getElementById("btn-save-manual-closed")
+          ?.addEventListener("click", async () => {
+            const st = document.getElementById("manual-closed-status");
+            const payload = {
+              exchange:
+                document.getElementById("m-exchange").value?.trim() || "",
+              symbol: document.getElementById("m-symbol").value?.trim() || "",
+              side: document.getElementById("m-side").value?.trim() || "",
+              size: Number(document.getElementById("m-size").value || 0),
+              entry_price: Number(
+                document.getElementById("m-entry").value || 0
+              ),
+              close_price: Number(
+                document.getElementById("m-close").value || 0
+              ),
+              open_time: parseLocalDateTimeToSeconds(
+                document.getElementById("m-open").value
+              ),
+              close_time: parseLocalDateTimeToSeconds(
+                document.getElementById("m-close-time").value
+              ),
+              funding_total: Number(
+                document.getElementById("m-funding").value || 0
+              ),
+              fee_total: Number(document.getElementById("m-fees").value || 0),
+              realized_pnl:
+                document.getElementById("m-realized").value === ""
+                  ? null
+                  : Number(document.getElementById("m-realized").value),
+              initial_margin:
+                document.getElementById("m-initial-margin").value === ""
+                  ? null
+                  : Number(document.getElementById("m-initial-margin").value),
+              notional:
+                document.getElementById("m-notional").value === ""
+                  ? null
+                  : Number(document.getElementById("m-notional").value),
+              leverage:
+                document.getElementById("m-leverage").value === ""
+                  ? null
+                  : Number(document.getElementById("m-leverage").value),
+              liquidation_price:
+                document.getElementById("m-liq").value === ""
+                  ? null
+                  : Number(document.getElementById("m-liq").value),
+            };
+
+            // Validación mínima
+            if (
+              !payload.exchange ||
+              !payload.symbol ||
+              !payload.side ||
+              !payload.size ||
+              !payload.entry_price ||
+              !payload.close_price ||
+              !payload.close_time
+            ) {
+              st.textContent =
+                "❌ Rellena como mínimo: exchange, symbol, side, size, entry, close, close time.";
+              return;
+            }
+
+            st.textContent = "Guardando...";
+            try {
+              const res = await fetch("/api/manual/closed", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data?.error || "Error guardando");
+
+              st.textContent = `✅ Guardado (id ${data.id || "?"}).`;
+              // refrescar pestaña "Closed Positions"
+              try {
+                await loadClosedPositions();
+              } catch (e) {}
+            } catch (e) {
+              st.textContent = "❌ " + e.message;
+            }
+          });
+      });
+    </script>
+  </body>
+</html>

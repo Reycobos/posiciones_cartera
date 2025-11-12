@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MEXC WS — Positions & Asset Test</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --card: #151826;
+        --text: #e7e9ee;
+        --muted: #9aa4b2;
+        --ok: #2ecc71;
+        --bad: #e74c3c;
+        --accent: #6c8bf5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+          Arial;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 16px 16px 10px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      label {
+        font-size: 12px;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 6px;
+      }
+      input {
+        background: #0d1020;
+        border: 1px solid #2a3354;
+        color: var(--text);
+        border-radius: 10px;
+        padding: 10px 12px;
+        min-width: 260px;
+      }
+      button {
+        background: var(--accent);
+        border: 0;
+        color: white;
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+      button.ghost {
+        background: transparent;
+        border: 1px solid #2a3354;
+        color: var(--text);
+      }
+      small {
+        color: var(--muted);
+      }
+      .status {
+        margin-left: 8px;
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 6px;
+        margin-top: 10px;
+      }
+      thead th {
+        font-size: 12px;
+        color: var(--muted);
+        text-align: left;
+        padding: 0 8px;
+      }
+      tbody td {
+        background: #0d1020;
+        padding: 10px 8px;
+        border-top: 1px solid #22283e;
+        border-bottom: 1px solid #22283e;
+      }
+      tbody tr td:first-child {
+        border-left: 1px solid #22283e;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+      }
+      tbody tr td:last-child {
+        border-right: 1px solid #22283e;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+      }
+      .pnl-pos {
+        color: var(--ok);
+      }
+      .pnl-neg {
+        color: var(--bad);
+      }
+      .pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #2a3354;
+      }
+      pre {
+        background: #0b0e1a;
+        border: 1px solid #22283e;
+        border-radius: 10px;
+        padding: 10px;
+        overflow: auto;
+        max-height: 260px;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 8px;
+      }
+      .kv div {
+        background: #0d1020;
+        border: 1px solid #22283e;
+        border-radius: 10px;
+        padding: 8px;
+      }
+      .kv b {
+        color: #cfd6e6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- POSITIONS -->
+      <div class="card">
+        <h1>MEXC WS — Positions</h1>
+        <div
+          class="row"
+          style="align-items: flex-end; gap: 12px; margin-bottom: 10px"
+        >
+          <div>
+            <label>Endpoint Positions</label>
+            <input id="epPos" placeholder="/api/mexc_ws_positions" />
+            <small
+              >Sirve este HTML desde el mismo host que el backend para evitar
+              CORS.</small
+            >
+          </div>
+          <div>
+            <label>Intervalo (ms)</label>
+            <input id="intPos" type="number" min="500" step="100" />
+          </div>
+          <div class="row" style="gap: 8px">
+            <button id="btnPosRefresh">Refresh</button>
+            <button id="btnPosStart" class="ghost">Auto ON</button>
+            <button id="btnPosStop" class="ghost">Auto OFF</button>
+          </div>
+          <div class="status" id="stPos">inicializando…</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Size</th>
+              <th>Entry</th>
+              <th>Mark</th>
+              <th>Unrealized</th>
+              <th>Funding</th>
+              <th>Realized</th>
+            </tr>
+          </thead>
+          <tbody id="tbPos">
+            <tr>
+              <td colspan="8"><small class="status">Cargando…</small></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <small id="tsPos">—</small>
+          <small id="cntPos">0 posiciones</small>
+        </div>
+      </div>
+
+      <!-- ASSET -->
+      <div class="card">
+        <h1>MEXC WS — Asset</h1>
+        <div
+          class="row"
+          style="align-items: flex-end; gap: 12px; margin-bottom: 10px"
+        >
+          <div>
+            <label>Endpoint Asset</label>
+            <input id="epAst" placeholder="/api/mexc_ws_asset" />
+          </div>
+          <div class="row" style="gap: 8px">
+            <button id="btnAstRefresh">Refresh</button>
+          </div>
+          <div class="status" id="stAst">inicializando…</div>
+        </div>
+
+        <div id="assetWrap" class="grid"></div>
+
+        <div class="footer">
+          <small id="tsAst">—</small>
+          <small id="cntAst">0 monedas</small>
+        </div>
+      </div>
+
+      <!-- RAW -->
+      <div class="card">
+        <h1>RAW</h1>
+        <div class="grid">
+          <div>
+            <label>RAW Positions</label>
+            <pre id="rawPos">(vacío)</pre>
+          </div>
+          <div>
+            <label>RAW Asset</label>
+            <pre id="rawAst">(vacío)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const S = {
+        epPos:
+          localStorage.getItem("mexc_ep_pos") ||
+          location.origin + "/api/mexc_ws_positions",
+        epAst:
+          localStorage.getItem("mexc_ep_ast") ||
+          location.origin + "/api/mexc_ws_asset",
+        intPos: Number(localStorage.getItem("mexc_int_pos") || 3000),
+        tPos: null,
+      };
+
+      $("epPos").value = S.epPos;
+      $("epAst").value = S.epAst;
+      $("intPos").value = String(S.intPos);
+
+      $("epPos").addEventListener("change", (e) => {
+        S.epPos = e.target.value.trim() || "/api/mexc_ws_positions";
+        localStorage.setItem("mexc_ep_pos", S.epPos);
+      });
+      $("epAst").addEventListener("change", (e) => {
+        S.epAst = e.target.value.trim() || "/api/mexc_ws_asset";
+        localStorage.setItem("mexc_ep_ast", S.epAst);
+      });
+      $("intPos").addEventListener("change", (e) => {
+        S.intPos = Math.max(500, Number(e.target.value || 3000));
+        localStorage.setItem("mexc_int_pos", String(S.intPos));
+        restartPosAuto();
+      });
+
+      $("btnPosRefresh").addEventListener("click", fetchPos);
+      $("btnPosStart").addEventListener("click", startPosAuto);
+      $("btnPosStop").addEventListener("click", stopPosAuto);
+      $("btnAstRefresh").addEventListener("click", fetchAst);
+
+      function startPosAuto() {
+        if (S.tPos) return;
+        S.tPos = setInterval(fetchPos, S.intPos);
+        $("stPos").textContent = "Auto ON";
+      }
+      function stopPosAuto() {
+        if (!S.tPos) return;
+        clearInterval(S.tPos);
+        S.tPos = null;
+        $("stPos").textContent = "Auto OFF";
+      }
+      function restartPosAuto() {
+        if (S.tPos) {
+          stopPosAuto();
+          startPosAuto();
+        }
+      }
+
+      function fmt(x, d = 4) {
+        const n = Number(x || 0);
+        return isFinite(n) ? n.toFixed(d) : "0";
+      }
+      function pnlCls(v) {
+        return (Number(v) || 0) >= 0 ? "pnl-pos" : "pnl-neg";
+      }
+      function esc(s) {
+        return String(s).replace(
+          /[&<>\"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;",
+            }[c])
+        );
+      }
+
+      async function fetchPos() {
+        try {
+          const r = await fetch(S.epPos, { cache: "no-store" });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          const data = await r.json();
+          renderPos(data);
+        } catch (e) {
+          $("stPos").textContent = "Error: " + e.message;
+        }
+      }
+      async function fetchAst() {
+        try {
+          const r = await fetch(S.epAst, { cache: "no-store" });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          const data = await r.json();
+          renderAst(data);
+        } catch (e) {
+          $("stAst").textContent = "Error: " + e.message;
+        }
+      }
+
+      function renderPos(data) {
+        const list = Array.isArray(data?.positions) ? data.positions : [];
+        const ts = Number(data?.ts || Date.now());
+        $("tsPos").textContent =
+          "Actualizado: " + new Date(ts).toLocaleTimeString();
+        $("cntPos").textContent = list.length + " posiciones";
+        $("rawPos").textContent = JSON.stringify(data, null, 2);
+        $("stPos").textContent = list.length ? "OK" : "No WS pushes yet";
+
+        const rows = list
+          .map(
+            (p) => `
+      <tr>
+        <td>${esc(p.symbol || "")}</td>
+        <td><span class="pill">${String(p.side || "").toUpperCase()}</span></td>
+        <td>${fmt(p.size)}</td>
+        <td>${fmt(p.entry_price)}</td>
+        <td>${fmt(p.mark_price)}</td>
+        <td class="${pnlCls(p.unrealized_pnl)}">$${fmt(
+              p.unrealized_pnl,
+              2
+            )}</td>
+        <td class="${pnlCls(p.funding_fee)}">$${fmt(p.funding_fee, 2)}</td>
+        <td class="${pnlCls(p.realized_pnl)}">$${fmt(p.realized_pnl, 2)}</td>
+      </tr>
+    `
+          )
+          .join("");
+        $("tbPos").innerHTML =
+          rows ||
+          `<tr><td colspan="8"><small class="status">No WS pushes yet</small></td></tr>`;
+      }
+
+      function renderAst(data) {
+        const obj = data && typeof data.asset === "object" ? data.asset : {};
+        const keys = Object.keys(obj);
+        const ts = Number(data?.ts || Date.now());
+        $("tsAst").textContent =
+          "Actualizado: " + new Date(ts).toLocaleTimeString();
+        $("cntAst").textContent = keys.length + " monedas";
+        $("rawAst").textContent = JSON.stringify(data, null, 2);
+        $("stAst").textContent = keys.length ? "OK" : "Sin datos";
+
+        if (!keys.length) {
+          $("assetWrap").innerHTML = `<small class="status">Sin datos</small>`;
+          return;
+        }
+        $("assetWrap").innerHTML = keys
+          .map((ccy) => {
+            const a = obj[ccy] || {};
+            return `
+        <div class="kv">
+          <div><b>Currency</b></div><div>${esc(ccy)}</div>
+          <div><b>Available</b></div><div>${fmt(a.available_balance, 6)}</div>
+          <div><b>Frozen</b></div><div>${fmt(a.frozen_balance, 6)}</div>
+          <div><b>Pos. Margin</b></div><div>${fmt(a.position_margin, 6)}</div>
+          <div><b>Cash</b></div><div>${fmt(a.cash_balance, 6)}</div>
+        </div>
+      `;
+          })
+          .join("");
+      }
+
+      // boot
+      fetchPos();
+      fetchAst();
+      startPosAuto();
+    </script>
+  </body>
+</html>
