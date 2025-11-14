@@ -559,7 +559,7 @@ from adapters.paradexv9s import (
       save_paradex_closed_positions,
 )
 
-from adapters.hyperliquidv5 import (
+from adapters.hyperliquid5 import (
     fetch_hyperliquid_open_positions,
     fetch_hyperliquid_funding_fees,
     fetch_hyperliquid_all_balances,

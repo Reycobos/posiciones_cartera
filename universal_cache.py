@@ -403,10 +403,10 @@ if __name__ == "__main__":
     init_universal_cache_db()
     
     # Agregar algunos ejemplos manualmente
-    add_manual_pair("gate", "ALPACAUSDT")
-    add_manual_pair("binance", "BTCUSDT")
-    add_manual_pair("kucoin", "ETHUSDT")
-    add_manual_pair("mexc", "SOLUSDT")
+    # add_manual_pair("gate", "ALPACAUSDT")
+    # add_manual_pair("binance", "BTCUSDT")
+    # add_manual_pair("kucoin", "ETHUSDT")
+    # add_manual_pair("mexc", "SOLUSDT")
     
     # Mostrar estadísticas
     stats = get_cache_stats()
