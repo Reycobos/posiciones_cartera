@@ -2083,6 +2083,9 @@ if __name__ == "__main__":
     # ✅ NUEVO: Inicializar tabla de sync timestamps
     from universal_cache import init_sync_timestamps_table
     init_sync_timestamps_table()
+    # ✅ AGREGAR AQUÍ:
+    from universal_cache import migrate_universal_cache
+    migrate_universal_cache()  # ← Migra la columna last_seen
 
     if SYNC_FUNDING_ON_START:
         force = None

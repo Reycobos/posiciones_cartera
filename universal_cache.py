@@ -44,6 +44,44 @@ def init_universal_cache_db():
     
     conn.commit()
     conn.close()
+    
+def migrate_universal_cache():
+    """Migra la tabla universal_cache para agregar la columna last_seen si no existe."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    try:
+        # Verifica si la columna existe
+        cur.execute("PRAGMA table_info(universal_cache)")
+        columns = [row[1] for row in cur.fetchall()]
+        
+        if "last_seen" not in columns:
+            print("🔧 Migrando universal_cache: agregando columna last_seen...")
+            
+            # Agregar columna con valor por defecto (timestamp actual)
+            cur.execute("""
+                ALTER TABLE universal_cache 
+                ADD COLUMN last_seen INTEGER DEFAULT 0
+            """)
+            
+            # Actualizar registros existentes con timestamp actual
+            current_ts = int(time.time())
+            cur.execute("""
+                UPDATE universal_cache 
+                SET last_seen = ? 
+                WHERE last_seen = 0 OR last_seen IS NULL
+            """, (current_ts,))
+            
+            conn.commit()
+            print(f"✅ Migración completada: {cur.rowcount} registros actualizados")
+        else:
+            print("✅ Columna last_seen ya existe, no se requiere migración")
+            
+    except Exception as e:
+        print(f"❌ Error en migración: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
 
 def cleanup_old_cache():
     """Limpia cache antiguo según CACHE_TTL_DAYS"""
